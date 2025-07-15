@@ -45,20 +45,46 @@ def generate_followups(text):
     return ask_llm(prompt)
 
 def extract_references(text: str) -> list:
-    refs_start = re.search(r'(References|Bibliography)', text, re.IGNORECASE)
+    # Locate the start of the references section
+    refs_start = re.search(r'(References|Bibliography|REFERENCES)', text)
     if not refs_start:
         return []
 
     start = refs_start.start()
     references_text = text[start:]
-    
-    # Simple split by line assuming each citation is separated
-    refs = references_text.strip().split('\n')
-    
-    # Filter out short or irrelevant lines
-    clean_refs = [r.strip() for r in refs if len(r.strip()) > 30]
-    
-    return clean_refs[:10]  # limit to top 10 citations
+
+    # Define common section headers that might follow References
+    end_section_pattern = re.compile(
+        r'\n\s*(Appendix|Acknowledgements?|Supplementary\s+Information|Funding|Author Contributions|Conflict of Interest|Footnotes|About the Authors)\s*\n',
+        re.IGNORECASE
+    )
+
+    # Truncate the references section if any of those headers appear
+    end_match = end_section_pattern.search(references_text)
+    if end_match:
+        references_text = references_text[:end_match.start()]
+
+    # Pattern for numbered references: [1], [2], or 1. 2. etc.
+    ref_pattern = re.compile(r'(?=\n?(?:\[\d+\]|\d{1,2}\.))', re.MULTILINE)
+
+    # Split based on that pattern
+    raw_refs = ref_pattern.split(references_text)
+
+    # Clean and filter references
+    clean_refs = []
+    for ref in raw_refs:
+        ref = ref.strip()
+        if len(ref) > 50:
+            # Remove leading [1], 1., 12., etc.
+            cleaned = re.sub(r'^(\[\d+\]|\d{1,2}\.)\s*', '', ref)
+            cleaned = cleaned.replace("&", "")
+            clean_refs.append(cleaned)
+
+    # for ref in clean_refs:
+    #     print(ref)
+
+    return clean_refs[:10]
+
 
 def search_cited_papers(citations: list) -> list:
     # Fake search results — replace with actual API calls
