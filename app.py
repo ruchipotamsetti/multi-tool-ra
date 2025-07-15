@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.text_tools import extract_text_from_pdf, get_domain, summarize_text, generate_followups
+from utils.text_tools import extract_text_from_pdf, get_domain, summarize_text, generate_followups, extract_references, search_cited_papers
 
 st.set_page_config(page_title="Multi-Tool Research Assistant", layout="wide")
 st.title("🧠 Multi-Tool Research Assistant")
@@ -31,3 +31,14 @@ if uploaded_file:
         with st.spinner("Generating ideas..."):
             questions = generate_followups(raw_text)
             st.write(questions)
+
+    if st.button("🔎 Find Cited Papers"):
+        with st.spinner("Extracting citations..."):
+            citations = extract_references(raw_text)
+            if not citations:
+                st.warning("No citations found.")
+            else:
+                results = search_cited_papers(citations)
+                st.subheader("Top Cited Papers:")
+                for r in results:
+                    st.markdown(f"- [{r['title']}]({r['link']})")

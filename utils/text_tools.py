@@ -1,6 +1,7 @@
 import fitz  # PyMuPDF
 from groq import Groq
 import os
+import re
 from dotenv import load_dotenv
 
 def extract_text_from_pdf(pdf_file):
@@ -42,3 +43,29 @@ def summarize_text(text):
 def generate_followups(text):
     prompt = f"Based on this research paper, suggest 3 original follow-up research questions:\n\n{text[:2000]}"
     return ask_llm(prompt)
+
+def extract_references(text: str) -> list:
+    refs_start = re.search(r'(References|Bibliography)', text, re.IGNORECASE)
+    if not refs_start:
+        return []
+
+    start = refs_start.start()
+    references_text = text[start:]
+    
+    # Simple split by line assuming each citation is separated
+    refs = references_text.strip().split('\n')
+    
+    # Filter out short or irrelevant lines
+    clean_refs = [r.strip() for r in refs if len(r.strip()) > 30]
+    
+    return clean_refs[:10]  # limit to top 10 citations
+
+def search_cited_papers(citations: list) -> list:
+    # Fake search results — replace with actual API calls
+    results = []
+    for citation in citations:
+        results.append({
+            "title": citation[:80] + "...",
+            "link": f"https://scholar.google.com/scholar?q={citation.replace(' ', '+')}"
+        })
+    return results
