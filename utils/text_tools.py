@@ -3,6 +3,10 @@ from groq import Groq
 import os
 import re
 from dotenv import load_dotenv
+import spacy
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+import re
 
 def extract_text_from_pdf(pdf_file):
     text = ""
@@ -95,3 +99,25 @@ def search_cited_papers(citations: list) -> list:
             "link": f"https://scholar.google.com/scholar?q={citation.replace(' ', '+')}"
         })
     return results
+
+
+def extract_keywords(text, top_n=10):
+    from collections import Counter
+
+    # Basic tokenizer
+    words = re.findall(r'\b\w+\b', text.lower())
+    stopwords = set(TfidfVectorizer(stop_words='english').get_stop_words())
+
+    filtered = [w for w in words if w not in stopwords and len(w) > 3]
+    common = Counter(filtered).most_common(top_n)
+    return [word for word, freq in common]
+
+
+
+# nlp = spacy.load("en_core_web_sm")
+
+# def extract_entities(text, entity_types=["PERSON", "ORG", "GPE", "DATE"]):
+#     doc = nlp(text)
+#     ents = [ent.text for ent in doc.ents if ent.label_ in entity_types]
+#     return list(set(ents))[:20]  # limit to unique top 20
+

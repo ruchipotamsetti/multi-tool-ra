@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.text_tools import extract_text_from_pdf, get_domain, summarize_text, generate_followups, extract_references, search_cited_papers
+from utils.text_tools import extract_text_from_pdf, get_domain, summarize_text, generate_followups, extract_references, search_cited_papers, extract_keywords, extract_entities
 
 st.set_page_config(page_title="Multi-Tool Research Assistant", layout="wide")
 st.title("🧠 Multi-Tool Research Assistant")
@@ -42,3 +42,17 @@ if uploaded_file:
                 st.subheader("Top Cited Papers:")
                 for r in results:
                     st.markdown(f"- [{r['title']}]({r['link']})")
+
+    if st.button("🔑 Extract Keywords"):
+        with st.spinner("Extracting..."):
+            keywords = extract_keywords(raw_text)
+            st.subheader("Top Keywords:")
+            st.write(", ".join(keywords))
+
+    # if st.button("📍 Named Entities"):
+    #     with st.spinner("Identifying entities..."):
+    #         entities = extract_entities(raw_text)
+    #         st.subheader("Named Entities (e.g., people, organizations, locations):")
+    #         st.write(", ".join(entities))
+
+
