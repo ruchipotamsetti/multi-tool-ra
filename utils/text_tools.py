@@ -114,10 +114,10 @@ def extract_keywords(text, top_n=10):
 
 
 
-# nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_sm")
 
-# def extract_entities(text, entity_types=["PERSON", "ORG", "GPE", "DATE"]):
-#     doc = nlp(text)
-#     ents = [ent.text for ent in doc.ents if ent.label_ in entity_types]
-#     return list(set(ents))[:20]  # limit to unique top 20
+def extract_entities(text, entity_types=["PERSON", "ORG", "GPE", "DATE"]):
+    doc = nlp(text)
+    ents = [ent.text for ent in doc.ents if ent.label_ in entity_types]
+    return list(set(ents))[:20]  # limit to unique top 20
 

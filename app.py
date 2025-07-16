@@ -49,10 +49,10 @@ if uploaded_file:
             st.subheader("Top Keywords:")
             st.write(", ".join(keywords))
 
-    # if st.button("📍 Named Entities"):
-    #     with st.spinner("Identifying entities..."):
-    #         entities = extract_entities(raw_text)
-    #         st.subheader("Named Entities (e.g., people, organizations, locations):")
-    #         st.write(", ".join(entities))
+    if st.button("📍 Named Entities"):
+        with st.spinner("Identifying entities..."):
+            entities = extract_entities(raw_text)
+            st.subheader("Named Entities (e.g., people, organizations, locations):")
+            st.write(", ".join(entities))
 
 
