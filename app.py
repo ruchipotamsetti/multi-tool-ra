@@ -36,11 +36,28 @@ if uploaded_file:
             with st.spinner("Summarizing..."):
                 summary = summarize_text(raw_text)
                 st.info(summary)
+                st.download_button(
+                    label="⬇️ Download Summary",
+                    data=summary,
+                    file_name="summary.txt",
+                    mime="text/plain"
+        )
+
+
+        
 
         if st.button("💡 Suggest Research Questions"):
             with st.spinner("Generating ideas..."):
                 questions = generate_followups(raw_text)
                 st.write(questions)
+                questions_text = "\n".join(questions) if isinstance(questions, list) else str(questions)
+                st.download_button(
+                    label="⬇️ Download Research Questions",
+                    data=questions_text,
+                    file_name="research_questions.txt",
+                    mime="text/plain"
+                )
+
 
         
 
@@ -56,7 +73,7 @@ if uploaded_file:
                     st.subheader("Top Cited Papers:")
                     for r in results:
                         st.markdown(f"- [{r['title']}]({r['link']})")
-                        
+
         if st.button("🔑 Extract Keywords"):
             with st.spinner("Extracting..."):
                 keywords = extract_keywords(raw_text)
