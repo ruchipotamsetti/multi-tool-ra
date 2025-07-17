@@ -71,8 +71,19 @@ if uploaded_file:
                 else:
                     results = search_cited_papers(citations)
                     st.subheader("Top Cited Papers:")
-                    for r in results:
+                    for idx, r in enumerate(results):
                         st.markdown(f"- [{r['title']}]({r['link']})")
+
+                    citation_text = "\n".join([f"{r['title']} - {r['link']}" for r in results])
+                    st.download_button(
+                        label="⬇️ Download Cited Papers",
+                        data=citation_text,
+                        file_name="cited_papers.txt",
+                        mime="text/plain",
+                        key="download_cited_papers"
+                    )
+
+
 
         if st.button("🔑 Extract Keywords"):
             with st.spinner("Extracting..."):
