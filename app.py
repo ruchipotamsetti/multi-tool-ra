@@ -90,9 +90,22 @@ if uploaded_file:
                 keywords = extract_keywords(raw_text)
                 st.subheader("Top Keywords:")
                 st.write(", ".join(keywords))
+                st.download_button(
+                    label="⬇️ Download Keywords",
+                    data="\n".join(keywords),
+                    file_name="keywords.txt",
+                    mime="text/plain"
+            )
+
 
         if st.button("📍 Named Entities"):
             with st.spinner("Identifying entities..."):
                 entities = extract_entities(raw_text)
                 st.subheader("Named Entities (e.g., people, organizations, locations):")
                 st.write(", ".join(entities))
+                st.download_button(
+                    label="⬇️ Download Named Entities",
+                    data="\n".join(entities),
+                    file_name="named_entities.txt",
+                    mime="text/plain"
+                )
