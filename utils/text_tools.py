@@ -121,3 +121,9 @@ def extract_entities(text, entity_types=["PERSON", "ORG", "GPE", "DATE"]):
     ents = [ent.text for ent in doc.ents if ent.label_ in entity_types]
     return list(set(ents))[:20]  # limit to unique top 20
 
+def generate_related_paper_links(domain, keywords):
+    base_url = "https://scholar.google.com/scholar?q="
+    search_query = f"{domain} {' '.join(keywords[:5])}"  # Use top 5 keywords max
+    url = base_url + search_query.replace(" ", "+")
+    return url
+

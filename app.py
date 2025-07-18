@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.text_tools import (
     extract_text_from_pdf,
+    generate_related_paper_links,
     get_domain,
     summarize_text,
     generate_followups,
@@ -16,96 +17,71 @@ st.title("🧠 Multi-Tool Research Assistant")
 uploaded_file = st.file_uploader("Upload a Research PDF", type=["pdf"])
 
 if uploaded_file:
-    with st.spinner("Extracting text..."):
+    with st.spinner("Processing..."):
+        # Step 1: Extract raw text
         raw_text = extract_text_from_pdf(uploaded_file)
 
-    with st.expander("📄 Raw Extracted Text"):
-        st.write(raw_text[:2000] + "...")  # show first part
+        # Step 2: Summarize raw text
+        summary = summarize_text(raw_text)
 
-    # Create two columns
-    col1, col2 = st.columns(2)
+        # Step 3: Detect domain from summary
+        domain = get_domain(summary)
 
-    # LEFT COLUMN — core research tools
-    with col1:
-        if st.button("🔍 Detect Domain"):
-            with st.spinner("Thinking..."):
-                domain = get_domain(raw_text)
-                st.success(f"Detected Domain: {domain}")
+        # Step 4: Extract keywords from summary
+        keywords = extract_keywords(summary)
 
-        if st.button("🧾 Summarize Paper"):
-            with st.spinner("Summarizing..."):
-                summary = summarize_text(raw_text)
-                st.info(summary)
-                st.download_button(
-                    label="⬇️ Download Summary",
-                    data=summary,
-                    file_name="summary.txt",
-                    mime="text/plain"
-        )
+        related_url = generate_related_paper_links(domain, keywords)
 
+        # Step 5: Generate follow-up questions from summary
+        questions = generate_followups(summary)
 
-        
+        # Step 6: Extract entities from summary
+        entities = extract_entities(summary)
 
-        if st.button("💡 Suggest Research Questions"):
-            with st.spinner("Generating ideas..."):
-                questions = generate_followups(raw_text)
-                st.write(questions)
-                questions_text = "\n".join(questions) if isinstance(questions, list) else str(questions)
-                st.download_button(
-                    label="⬇️ Download Research Questions",
-                    data=questions_text,
-                    file_name="research_questions.txt",
-                    mime="text/plain"
-                )
+        # Step 7: Extract citations from raw text (more reliable than summary)
+        citations = extract_references(raw_text)
+        cited_results = search_cited_papers(citations)
 
+    # === Display Results ===
 
-        
+    st.subheader("📄 Raw Extracted Text")
+    st.write(raw_text[:2000] + "...")
 
-    # RIGHT COLUMN — text analysis tools
-    with col2:
-        if st.button("🔎 Find Cited Papers"):
-            with st.spinner("Extracting citations..."):
-                citations = extract_references(raw_text)
-                if not citations:
-                    st.warning("No citations found.")
-                else:
-                    results = search_cited_papers(citations)
-                    st.subheader("Top Cited Papers:")
-                    for idx, r in enumerate(results):
-                        st.markdown(f"- [{r['title']}]({r['link']})")
+    st.subheader("🧾 Summary")
+    st.write(summary)
+    st.download_button("⬇️ Download Summary", summary, "summary.txt", mime="text/plain", key="summary")
 
-                    citation_text = "\n".join([f"{r['title']} - {r['link']}" for r in results])
-                    st.download_button(
-                        label="⬇️ Download Cited Papers",
-                        data=citation_text,
-                        file_name="cited_papers.txt",
-                        mime="text/plain",
-                        key="download_cited_papers"
-                    )
+    st.subheader("🔍 Detected Domain")
+    st.success(domain)
 
+    st.subheader("💡 Follow-up Research Questions")
+    st.write(questions)
+    st.download_button("⬇️ Download Questions", "\n".join(questions) if isinstance(questions, list) else str(questions),
+                       "questions.txt", mime="text/plain", key="questions")
 
+    st.subheader("🔑 Extracted Keywords")
+    st.write(", ".join(keywords))
+    st.download_button("⬇️ Download Keywords", "\n".join(keywords), "keywords.txt", mime="text/plain", key="keywords")
 
-        if st.button("🔑 Extract Keywords"):
-            with st.spinner("Extracting..."):
-                keywords = extract_keywords(raw_text)
-                st.subheader("Top Keywords:")
-                st.write(", ".join(keywords))
-                st.download_button(
-                    label="⬇️ Download Keywords",
-                    data="\n".join(keywords),
-                    file_name="keywords.txt",
-                    mime="text/plain"
-            )
+    st.subheader("🔗 Related Research Papers")
+    st.markdown(f"🔍 [Click here to search related papers on Google Scholar]({related_url})")
 
+    st.download_button(
+        label="⬇️ Download Related Search URL",
+        data=related_url,
+        file_name="related_research_url.txt",
+        mime="text/plain",
+        key="related_url"
+    )
 
-        if st.button("📍 Named Entities"):
-            with st.spinner("Identifying entities..."):
-                entities = extract_entities(raw_text)
-                st.subheader("Named Entities (e.g., people, organizations, locations):")
-                st.write(", ".join(entities))
-                st.download_button(
-                    label="⬇️ Download Named Entities",
-                    data="\n".join(entities),
-                    file_name="named_entities.txt",
-                    mime="text/plain"
-                )
+    st.subheader("📍 Named Entities (from summary)")
+    st.write(", ".join(entities))
+    st.download_button("⬇️ Download Named Entities", "\n".join(entities), "entities.txt", mime="text/plain", key="entities")
+
+    st.subheader("🔎 Cited Papers")
+    for r in cited_results:
+        st.markdown(f"- [{r['title']}]({r['link']})")
+    citation_text = "\n".join([f"{r['title']} - {r['link']}" for r in cited_results])
+    st.download_button("⬇️ Download Cited Papers", citation_text, "citations.txt", mime="text/plain", key="citations")
+
+    
