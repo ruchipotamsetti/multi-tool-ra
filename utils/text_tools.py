@@ -29,7 +29,7 @@ def ask_llm(prompt):
         },
         {
             "role": "system",
-            "content": "You are a pirate.",
+            "content": "You are an assistant.",
         }
     ],
     model="llama-3.3-70b-versatile",
