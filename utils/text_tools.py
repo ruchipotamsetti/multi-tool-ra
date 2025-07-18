@@ -4,7 +4,7 @@ import os
 import re
 from dotenv import load_dotenv
 import spacy
-
+import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 import re
 
@@ -127,3 +127,33 @@ def generate_related_paper_links(domain, keywords):
     url = base_url + search_query.replace(" ", "+")
     return url
 
+def generate_related_paper_links_test(domain, keywords):
+    query = f"{domain} {' '.join(keywords[:5])}"  # e.g., "Bioinformatics spatial transcriptomics"
+
+    api_url = "https://api.semanticscholar.org/graph/v1/paper/search"
+    # headers = {
+    #     "x-api-key": os.getenv("SEMANTIC_SCHOLAR_API_KEY")  # Set in your .env file
+    # }
+
+    params = {
+        "query": query,
+        "limit": 5,
+        "fields": "title,url,authors,year"
+    }
+
+    response = requests.get(api_url, params=params)
+    if response.status_code != 200:
+        return [{"title": "Error fetching papers", "link": ""}]
+
+    data = response.json()
+    results = []
+    for paper in data.get("data", []):
+        results.append({
+            "title": paper.get("title", "No title"),
+            "link": paper.get("url", "#"),
+            "authors": ", ".join([a["name"] for a in paper.get("authors", [])]),
+            "year": paper.get("year", "")
+        })
+
+    print(results)
+    return results

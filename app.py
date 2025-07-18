@@ -8,7 +8,7 @@ from utils.text_tools import (
     extract_references,
     search_cited_papers,
     extract_keywords,
-    extract_entities,
+    extract_entities
 )
 
 st.set_page_config(page_title="Multi-Tool Research Assistant", layout="wide")
@@ -17,6 +17,23 @@ st.title("🧠 Multi-Tool Research Assistant")
 uploaded_file = st.file_uploader("Upload a Research PDF", type=["pdf"])
 
 if uploaded_file:
+
+    st.subheader("🧭 Processing Pipeline")
+    st.graphviz_chart("""
+        digraph {
+            "Upload PDF" -> "Extract Raw Text"
+            "Extract Raw Text" -> "Summarize Text"
+            "Summarize Text" -> "Detect Domain"
+            "Summarize Text" -> "Extract Keywords"
+            "Summarize Text" -> "Generate Follow-up Questions"
+            "Summarize Text" -> "Extract Entities"
+            "Extract Raw Text" -> "Extract Citations"
+            "Extract Citations" -> "Search Cited Papers"
+            "Detect Domain" -> "Generate Related Paper Links"
+            "Extract Keywords" -> "Generate Related Paper Links"
+        }
+    """)
+
     with st.spinner("Processing..."):
         # Step 1: Extract raw text
         raw_text = extract_text_from_pdf(uploaded_file)
