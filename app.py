@@ -14,91 +14,85 @@ from utils.text_tools import (
 st.set_page_config(page_title="Multi-Tool Research Assistant", layout="wide")
 st.title("🧠 Multi-Tool Research Assistant")
 
-uploaded_file = st.file_uploader("Upload a Research PDF", type=["pdf"])
+uploaded_file = st.file_uploader("📄 Upload a Research PDF", type=["pdf"])
 
 if uploaded_file:
+    with st.expander("🧭 **View Processing Pipeline**", expanded=False):
+        st.graphviz_chart("""
+            digraph {
+                "Upload PDF" -> "Extract Raw Text"
+                "Extract Raw Text" -> "Summarize Text"
+                "Summarize Text" -> "Detect Domain"
+                "Summarize Text" -> "Extract Keywords"
+                "Summarize Text" -> "Generate Follow-up Questions"
+                "Summarize Text" -> "Extract Entities"
+                "Extract Raw Text" -> "Extract Citations"
+                "Extract Citations" -> "Search Cited Papers"
+                "Detect Domain" -> "Generate Related Paper Links"
+                "Extract Keywords" -> "Generate Related Paper Links"
+            }
+        """)
 
-    st.subheader("🧭 Processing Pipeline")
-    st.graphviz_chart("""
-        digraph {
-            "Upload PDF" -> "Extract Raw Text"
-            "Extract Raw Text" -> "Summarize Text"
-            "Summarize Text" -> "Detect Domain"
-            "Summarize Text" -> "Extract Keywords"
-            "Summarize Text" -> "Generate Follow-up Questions"
-            "Summarize Text" -> "Extract Entities"
-            "Extract Raw Text" -> "Extract Citations"
-            "Extract Citations" -> "Search Cited Papers"
-            "Detect Domain" -> "Generate Related Paper Links"
-            "Extract Keywords" -> "Generate Related Paper Links"
-        }
-    """)
-
-    with st.spinner("Processing..."):
-        # Step 1: Extract raw text
+    with st.spinner("⚙️ Processing..."):
         raw_text = extract_text_from_pdf(uploaded_file)
-
-        # Step 2: Summarize raw text
         summary = summarize_text(raw_text)
-
-        # Step 3: Detect domain from summary
         domain = get_domain(summary)
-
-        # Step 4: Extract keywords from summary
         keywords = extract_keywords(summary)
-
         related_url = generate_related_paper_links(domain, keywords)
-
-        # Step 5: Generate follow-up questions from summary
         questions = generate_followups(summary)
-
-        # Step 6: Extract entities from summary
         entities = extract_entities(summary)
-
-        # Step 7: Extract citations from raw text (more reliable than summary)
         citations = extract_references(raw_text)
         cited_results = search_cited_papers(citations)
 
-    # === Display Results ===
+    st.markdown("## 📊 Processed Output")
 
-    st.subheader("📄 Raw Extracted Text")
-    st.write(raw_text[:2000] + "...")
+    # 1. Summary + Domain + Follow-ups
+    col1, col2 = st.columns([2, 1])
 
-    st.subheader("🧾 Summary")
-    st.write(summary)
-    st.download_button("⬇️ Download Summary", summary, "summary.txt", mime="text/plain", key="summary")
+    with col1:
+        st.markdown("### 🧾 Summary")
+        st.write(summary)
+        st.download_button("⬇️ Download Summary", summary, "summary.txt", mime="text/plain")
 
-    st.subheader("🔍 Detected Domain")
-    st.success(domain)
+        st.markdown("### 🔑 Keywords")
+        st.write(", ".join(keywords))
+        st.download_button("⬇️ Download Keywords", "\n".join(keywords), "keywords.txt", mime="text/plain")
 
-    st.subheader("💡 Follow-up Research Questions")
+    with col2:
+        st.markdown("### 🔍 Detected Domain")
+        st.success(domain)
+
+    st.divider()
+
+    st.markdown("### 💡 Follow-up Research Questions")
     st.write(questions)
     st.download_button("⬇️ Download Questions", "\n".join(questions) if isinstance(questions, list) else str(questions),
-                       "questions.txt", mime="text/plain", key="questions")
+                       "questions.txt", mime="text/plain")
 
-    st.subheader("🔑 Extracted Keywords")
-    st.write(", ".join(keywords))
-    st.download_button("⬇️ Download Keywords", "\n".join(keywords), "keywords.txt", mime="text/plain", key="keywords")
+    st.divider()
 
-    st.subheader("🔗 Related Research Papers")
-    st.markdown(f"🔍 [Click here to search related papers on Google Scholar]({related_url})")
-
-    st.download_button(
-        label="⬇️ Download Related Search URL",
-        data=related_url,
-        file_name="related_research_url.txt",
-        mime="text/plain",
-        key="related_url"
-    )
-
-    st.subheader("📍 Named Entities (from summary)")
+    st.markdown("### 📍 Named Entities (from Summary)")
     st.write(", ".join(entities))
-    st.download_button("⬇️ Download Named Entities", "\n".join(entities), "entities.txt", mime="text/plain", key="entities")
+    st.download_button("⬇️ Download Named Entities", "\n".join(entities), "entities.txt", mime="text/plain")
 
-    st.subheader("🔎 Cited Papers")
-    for r in cited_results:
-        st.markdown(f"- [{r['title']}]({r['link']})")
-    citation_text = "\n".join([f"{r['title']} - {r['link']}" for r in cited_results])
-    st.download_button("⬇️ Download Cited Papers", citation_text, "citations.txt", mime="text/plain", key="citations")
+    st.divider()
 
-    
+    # st.markdown("### 🔗 Related Research Papers")
+    # st.markdown(f"[🔍 Click here to search on Google Scholar]({related_url})")
+    # st.download_button("⬇️ Download Search URL", related_url, "related_research_url.txt", mime="text/plain")
+
+    # st.divider()
+
+    st.markdown("### 🔎 Cited Papers")
+    if cited_results==[]:
+        st.write("No listed citations.")
+    else:
+        # for r in cited_results:
+        #     st.markdown(f"- [{r['title']}]({r['link']})")
+        citation_text = "\n".join([f"{r['title']} - {r['link']}" for r in cited_results])
+        st.download_button("⬇️ Download Cited Papers", citation_text, "citations.txt", mime="text/plain")
+
+    st.divider()
+
+    with st.expander("📄 View Raw Extracted Text"):
+        st.write(raw_text[:3000] + "..." if len(raw_text) > 3000 else raw_text)
