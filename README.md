@@ -16,15 +16,20 @@ The user uploads a research paper in PDF format.
 
    * Uses a Large Language Model (LLM) to generate a concise summary of the paper.
    * Searches for cited or related papers using external search APIs.
-   * Suggests **3 original follow-up research ideas or improvements** based on the content.
+   * Suggests **original follow-up research ideas or improvements** based on the content.
 
 4. **Output Compilation**
    The agent compiles:
 
    * A domain classification
    * A research summary
+   * Relevant keywords
    * Related works
    * Suggested research directions
 
    into a structured **Knowledge Digest** for the user.
+
+## 🚀 Live Demo
+
+[Click here to try it out!](https://multi-tool-ra.streamlit.app/)
 
